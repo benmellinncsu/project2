@@ -214,3 +214,5 @@ ggplot(vikes_table_4_long_wp, aes(x = factor(year), y = average_wpa, fill = play
 ```
 
 -   This is also a fascinating breakdown. Note that in 2009, running was not advantageous at all, although Adrian Peterson ran for 1300+ yards that year.
+
+Let's try to visualize some other things.
