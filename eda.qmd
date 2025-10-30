@@ -74,3 +74,143 @@ vikes_table_2
 ```
 
 ## Visualization
+
+```{r}
+library(ggplot2)
+ggplot(vikes_table_2, aes(x=avg_yards, y = wins))+
+  geom_point(color="purple")+
+  geom_text(aes(label=year), hjust = 1.1, size = 3.5)+
+  labs(
+    title = "Average yards per play versus Wins",
+    x = "Average Yards",
+    y = "Wins"
+  )+
+  theme_minimal()+
+   expand_limits(x = min(vikes_table_2$avg_yards) - 0.1)
+```
+
+There is no obvious relationship between these two variables.
+
+Let's next look at yards/run plays and yards/pass plays by year.
+
+```{r}
+vikes_table_3 <- vikes_data |>
+  mutate(year = year(game_date)) |>
+  group_by(year) |>
+  summarize(
+    avg_yards = mean(yards_gained, na.rm = TRUE),
+    yards_sd  = sd(yards_gained, na.rm = TRUE),
+    avg_run_yrds = mean(ifelse(play_type=="run", yards_gained, NA), na.rm=TRUE),
+    avg_pass_yrds = mean(ifelse(play_type=="pass", yards_gained, NA), na.rm=TRUE)
+  )
+vikes_table_3
+
+# I want to visualize this so I'm going to pivot longer
+vikes_table_3_long<-vikes_table_3|>
+  rename(
+    run = avg_run_yrds,
+    pass = avg_pass_yrds
+  )|>
+  pivot_longer(cols =c(run,pass),
+               names_to = "play_type",
+               values_to= "average_yards")
+vikes_table_3_long
+```
+
+```{r}
+ggplot(vikes_table_3_long, aes(x = factor(year), y = average_yards, fill = play_type)) +
+  geom_col(position = "dodge") +
+  labs(
+    title = "Average Yards per Play by Year",
+    x = "Year",
+    y = "Average Yards",
+    fill = "Play Type"
+  ) +
+    scale_fill_manual(
+    values = c("run" = "purple",   
+               "pass" = "gold")  
+  ) +
+  theme_minimal()
+```
+
+-   Vikings fans will fondly remember 2012 as Adrian Peterson rushing for 2000+ yards in 2012 after tearing his ACL and winning MVP. SKOL. This year the Vikings had the highest rush yards/attempt of any year.
+
+-   Vikings fans will also remember 2009 as the year Brett Favre threw for 4200 yards and took the Vikings to the NFC championship game, only to lose to the Saints after an infamous "too many men of the field" penalty, and "bountygate"\--a system that incentivized Saints defensive players to try to knock opposing players out of the game. This was the year with the highest pass yards/attempt.
+
+-   Let us also not forget that Favre and Peterson have both endured their fair share of scandals, and I would consider both to be questionable morals.
+
+Lets look at some other things:
+
+```{r}
+vikes_table_4 <- vikes_data |>
+  mutate(year = year(game_date)) |>
+  group_by(year) |>
+  summarize(
+    avg_yards = mean(yards_gained, na.rm = TRUE),
+    yards_sd  = sd(yards_gained, na.rm = TRUE),
+    avg_run_epa = mean(ifelse(play_type=="run", epa, NA), na.rm=TRUE),
+    avg_pass_epa = mean(ifelse(play_type=="pass", epa, NA), na.rm=TRUE),
+    avg_run_wpa = mean(ifelse(play_type=="run", wpa, NA), na.rm=TRUE),
+    avg_pass_wpa = mean(ifelse(play_type=="pass", wpa, NA), na.rm=TRUE)
+  )
+vikes_table_4
+
+# I want to visualize this so I'm going to pivot longer for EPA
+vikes_table_4_long_ep<-vikes_table_4|>
+  rename(
+    run = avg_run_epa,
+    pass = avg_pass_epa
+  )|>
+  pivot_longer(cols =c(run,pass),
+               names_to = "play_type",
+               values_to= "average_epa")
+vikes_table_4_long_ep
+
+## And pivot longer for WPA
+vikes_table_4_long_wp<-vikes_table_4|>
+  rename(
+    run = avg_run_wpa,
+    pass = avg_pass_wpa
+  )|>
+  pivot_longer(cols =c(run,pass),
+               names_to = "play_type",
+               values_to= "average_wpa")
+vikes_table_4_long_wp
+
+```
+
+```{r}
+ggplot(vikes_table_4_long_ep, aes(x = factor(year), y = average_epa, fill = play_type)) +
+  geom_col(position = "dodge") +
+  labs(
+    title = "Average EPA per Play by Year",
+    x = "Year",
+    y = "Average EPA",
+    fill = "Play Type"
+  ) +
+    scale_fill_manual(
+    values = c("run" = "purple",   
+               "pass" = "gold")  
+  ) +
+  theme_minimal()
+```
+
+-   Similar trends are visible here. Note that the 2010 Vikings were 6-10.
+
+```{r}
+ggplot(vikes_table_4_long_wp, aes(x = factor(year), y = average_wpa, fill = play_type)) +
+  geom_col(position = "dodge") +
+  labs(
+    title = "Average WPA per Play by Year",
+    x = "Year",
+    y = "Average WPA",
+    fill = "Play Type"
+  ) +
+    scale_fill_manual(
+    values = c("run" = "purple",   
+               "pass" = "gold")  
+  ) +
+  theme_minimal()
+```
+
+-   This is also a fascinating breakdown. Note that in 2009, running was not advantageous at all, although Adrian Peterson ran for 1300+ yards that year.
