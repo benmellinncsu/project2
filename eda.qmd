@@ -1,0 +1,76 @@
+---
+title: "Vikings_EDA"
+format: html
+editor: visual
+---
+
+# Exploring Vikings NFL Data
+
+```{r}
+library(tidyverse)
+vikes_data <-read_csv("final_vikings_data.csv")
+```
+
+```{r}
+
+## Getting to know the data
+dim(vikes_data)
+colnames(vikes_data)
+
+```
+
+## Contingency Tables and Numeric Summaries
+
+First, visualize vikings play type per down.
+
+```{r}
+table(vikes_data$down, vikes_data$play_type)
+```
+
+Seems like the Vikings are more likely to pass over run on later downs.
+
+Let's look at counts and ratios of pass and run plays per year.
+
+```{r}
+library(lubridate)
+vikes_table_1 <-vikes_data|>
+  mutate(year = year(game_date)) |>
+  group_by(year) |> 
+  summarize(run_count=sum(play_type=="run",na.rm=TRUE ), pass_count = sum(play_type=="pass",na.rm=TRUE))|>
+  mutate(run_ratio = run_count/(run_count+pass_count),pass_ratio = pass_count/(run_count+pass_count))
+
+vikes_table_1
+```
+
+I want to create a table that shows average yards per play by year.
+
+```{r}
+vikes_table_2 <- vikes_data |>
+  mutate(year = year(game_date)) |>
+  group_by(year) |>
+  summarize(
+    avg_yards = mean(yards_gained, na.rm = TRUE),
+    yards_sd  = sd(yards_gained, na.rm = TRUE)
+  )
+            
+```
+
+```{r}
+vikes_table_2
+```
+
+Cool! Vikings were averaging a high 4.1 yards per play in 2013. Surprisingly, the Vikings were 5-10-1 in spite of this.
+
+Let's add the Vikings wins to this table to look at how yards per play relates to games won.
+
+```{r}
+# Adding in a vector with wins is easier than trying to extract this information from a play by play dataset.
+
+wins<-c(12,6,3,10,5,7,11,8,13,8)
+
+vikes_table_2$wins=wins
+
+vikes_table_2
+```
+
+## Visualization
