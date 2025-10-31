@@ -11,7 +11,7 @@ library(tidyverse)
 vikes_data <-read_csv("final_vikings_data.csv")
 ```
 
-```{r}
+```{r, include=FALSE}
 
 ## Getting to know the data
 dim(vikes_data)
@@ -135,9 +135,9 @@ ggplot(vikes_table_3_long, aes(x = factor(year), y = average_yards, fill = play_
 
 -   Vikings fans will fondly remember 2012 as Adrian Peterson rushing for 2000+ yards in 2012 after tearing his ACL and winning MVP. SKOL. This year the Vikings had the highest rush yards/attempt of any year.
 
--   Vikings fans will also remember 2009 as the year Brett Favre threw for 4200 yards and took the Vikings to the NFC championship game, only to lose to the Saints after an infamous "too many men of the field" penalty, and "bountygate"\--a system that incentivized Saints defensive players to try to knock opposing players out of the game. This was the year with the highest pass yards/attempt.
+-   Vikings fans will also remember 2009 as the year Brett Favre threw for 4200 yards and took the Vikings to the NFC championship game, only to lose to the Saints after an infamous "too many men on the field" penalty, and "bountygate"\--a system that incentivized Saints defensive players to try to knock opposing players out of the game. This was the year with the highest pass yards/attempt.
 
--   Let us also not forget that Favre and Peterson have both endured their fair share of scandals, and I would consider both to be questionable morals.
+-   Let us also not forget that Favre and Peterson have both endured their fair share of scandals, and I don't want to reminisce on their glory days without noting this.
 
 Lets look at some other things:
 
