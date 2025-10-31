@@ -213,6 +213,51 @@ ggplot(vikes_table_4_long_wp, aes(x = factor(year), y = average_wpa, fill = play
   theme_minimal()
 ```
 
--   This is also a fascinating breakdown. Note that in 2009, running was not advantageous at all, although Adrian Peterson ran for 1300+ yards that year.
+-   This is also a fascinating breakdown. Note that in 2009, running was not advantageous at all, although Adrian Peterson did run for 1300+ yards that year.
 
-Let's try to visualize some other things.
+Let's try to visualize some other things. I want to try do a heatmap relating EPA and field position.
+
+```{r}
+epa_by_field<-vikes_data|>
+  group_by(yardline_100)|>
+  summarize(avg_epa = mean(epa, na.rm=TRUE))
+epa_by_field
+```
+
+```{r}
+ggplot(epa_by_field, aes(x=yardline_100, y=1, fill = avg_epa))+
+  geom_tile()+
+  scale_fill_gradient2()+
+  labs(
+    title = "Vikings EPA by Field Position",
+    x = "Yards from Opponent End Zone",
+    y = "",
+    fill = "Average EPA"
+  ) 
+
+```
+
+I would like to facet this by play type.
+
+```{r}
+
+epa_by_field_type<-vikes_data|>
+  filter(play_type %in% c("run","pass"))|>
+  group_by(yardline_100,play_type)|>
+  summarize(avg_epa = mean(epa, na.rm = TRUE), .groups = "drop")
+
+ggplot(epa_by_field_type, aes(x=yardline_100, y=1, fill=avg_epa))+
+       geom_tile()+
+       scale_fill_gradient2()+
+       facet_wrap(~play_type, ncol = 1) +
+       labs(
+    title = "Vikings EPA by Field Position and Play Type",
+    x = "Yards from Opponent End Zone",
+    y = "",
+    fill = "Average EPA"
+  )
+         
+  
+```
+
+Seems like passing generally has a higher EPA from just about anywhere in the field.
