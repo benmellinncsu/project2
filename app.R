@@ -4,6 +4,7 @@ library(tidyverse)
 library(lubridate)
 
 ui<-fluidPage(
+  useShinyalert(),
   titlePanel("MN Vikings Plays Data Explorer"),
   
   sidebarLayout(
@@ -58,8 +59,26 @@ ui<-fluidPage(
                  h3("Data Exploration"),
                  
                  tabsetPanel(
-                   tabPanel("Summary Table",
-                            verbatimTextOutput("summary1")
+                   tabPanel("Play Type Per Down",
+                            
+                            selectInput(
+                              "display_type", 
+                              "Display:", 
+                              choices = c("Plot Only" = "plot", 
+                                          "Table Only" = "table", 
+                                          "Both" = "both"), 
+                              selected = "both"
+                            ),
+                            
+                            conditionalPanel(
+                              condition = "input.display_type == 'plot' || input.display_type == 'both'",
+                              plotOutput("play_type_plot", height = "400px")
+                            ),
+                            
+                            conditionalPanel(
+                              condition = "input.display_type == 'table' || input.display_type == 'both'",
+                              tableOutput("play_type_table")
+                            )
                    ),
                    tabPanel("Offensive Metrics by Play Type over the Years",
                             selectInput(
@@ -86,7 +105,35 @@ ui<-fluidPage(
                               condition = "input.display_type == 'table' || input.display_type == 'both'",
                               DT::dataTableOutput("metric_by_year_table")
                             )
-                   )
+                   ),
+                   
+                   tabPanel("Offensive Metric, Field Position, and Play Type",
+                            selectInput(
+                              "display_type", 
+                              "Display:", 
+                              choices = c("Plot Only" = "plot", 
+                                          "Table Only" = "table", 
+                                          "Both" = "both"), 
+                              selected = "both"
+                            ),
+                            
+                            selectInput("pos_metric", "Choose Metric:",
+                                        choices = c("epa" = "epa",
+                                                    "wpa" = "wpa",
+                                                    "yards" = "yards_gained"),
+                                        selected = "epa"),
+                            
+                            conditionalPanel(
+                              condition = "input.display_type == 'plot' || input.display_type == 'both'",
+                              plotOutput("metric_by_position_plot")
+                            ),
+                            
+                            conditionalPanel(
+                              condition = "input.display_type == 'table' || input.display_type == 'both'",
+                              DT::dataTableOutput("metric_by_position_table")
+                            )
+                            
+                   ),
                  )
         )
         
@@ -106,8 +153,41 @@ server <- function(input, output, session) {
   
   rv <- reactiveValues(data = vikes_data)
   
+
+  
+  
+  ### DATASET FILTERING AND SUBSETTING
   
   observeEvent(input$subset_button, {
+    ## ERROR CHECKING
+    if (is.null(input$cat1) || length(input$cat1) == 0) {
+      shinyalert(
+        title = "Error",
+        text = "You must select at least one Play Type!",
+        type = "error"
+      )
+      return()
+    }
+    
+    if (is.null(input$cat2) || length(input$cat2) == 0) {
+      shinyalert(
+        title = "Error",
+        text = "You must select at least Offense or Defense!",
+        type = "error"
+      )
+      return()
+    }
+    
+    if (is.null(input$cat3) || length(input$cat3) == 0) {
+      shinyalert(
+        title = "Error",
+        text = "You must select at least One Down",
+        type = "error"
+      )
+      return()
+    }
+    
+    ## SUBSETTING AND FILTERING
     rv$data<-vikes_data|>
       filter(
         play_type %in% input$cat1,
@@ -135,9 +215,29 @@ server <- function(input, output, session) {
       write.csv(rv$data, con)
     }
   )
+  ##### PLAY TYPE BY DOWN LOGIC####
   
+  output$play_type_table <- renderTable({
+    vikes_data <- rv$data
+    table(vikes_data$down, vikes_data$play_type)
+  })
+
+  output$play_type_plot <- renderPlot({
+    plot_data <- as.data.frame(table(rv$data$down, rv$data$play_type))
+    names(plot_data) <- c("Down", "Play_Type", "Count")
+    
+    ggplot(plot_data, aes(x = Down, y = Count, fill = Play_Type)) +
+      geom_col(position = "dodge") +
+      labs(
+        title = "Play Type Counts per Down",
+        x = "Down",
+        y = "Number of Plays",
+        fill = "Play Type"
+      ) +
+      theme_minimal()
+  })
   
-  
+  ##### OFFENSIVE METRIC BY PLAY TYPE LOGIC####
   metric_summary_long <- eventReactive(input$subset_button, {
     
     metric_col <- sym(input$metric)
@@ -176,7 +276,52 @@ server <- function(input, output, session) {
   output$metric_by_year_table <- DT::renderDataTable({
     metric_summary_long()
   })
+  
+  
+  ##### OFFENSIVE METRIC BY FIELD POSITION LOGIC, SUBSET BY PLAY TYPE####
+  
+  pos_metric_summary_long <- eventReactive(input$subset_button, {
     
+    metric_col <- sym(input$pos_metric)
+    
+    summary_wide <- rv$data |>
+      group_by(yardline_100,play_type)|>
+      summarize(
+        average_metric = mean(!!metric_col, na.rm = TRUE),
+        .groups = "drop"
+      )
+    
+    
+    summary_wide
+  })
+  
+  output$metric_by_position_table <- DT::renderDataTable({
+    pos_metric_summary_long()
+  })
+  
+  output$metric_by_position_plot<-renderPlot({
+    summary_data <- pos_metric_summary_long()
+    req(summary_data)
+    
+    ggplot(summary_data, aes(x=yardline_100, y=1, fill=average_metric))+
+      geom_tile()+
+      scale_fill_gradient2(
+        low = "green",      # color for lowest values
+        mid = "blue",       # color for middle
+        high = "red",       # color for highest values
+        midpoint = 0,        # center the gradient around 0 (adjust as needed)
+        name = paste0("Average ", toupper(input$pos_metric))
+      )+
+      facet_wrap(~play_type, ncol = 1) +
+      labs(
+        title = paste0("Offensive ", input$pos_metric, " by Field Position and Play Type"),,
+        x = "Yards from Opponent End Zone",
+        y = "",
+        fill = paste0("Average ", input$pos_metric)
+      )
+  })
+  
+  
   
 }
 
