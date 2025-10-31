@@ -48,8 +48,18 @@ ui<-fluidPage(
       tabsetPanel(
         tabPanel("About", 
                  h3("About"),
-                 plotOutput("plot1")
+                 p(strong("Purpose:"), "This app was created by Ben Mellin for a statistics project. This project explores Minnesota Vikings individual play data over the years."),
+                 p(strong("Source:"), "This data is from an",    
+                   a("nflscrap project",
+                    href = "https://www.kaggle.com/datasets/maxhorowitz/nflplaybyplay2009to2016/data",
+                    target = "_blank")),
+                 p(strong("Sidebar Information:"), "Subset the data using the sidebar. Each instance represents a single play that occured in a Minnesota Vikings game. You can subset based on which years you would like to include, if the Vikings were on offense or defense, what type of play they ran, what down, and what yardline the play was ran from."),
+                 p(strong("Data Download Information:"), "When you have subsetted the data as you like, you can download the subsetted data in the data download tab."),
+                 p(strong("Data Exploration Information"), "Check out the data exploration tab to see some visuals and tables. You can look at plays the Vikings ran on each down, offensive metrics over the years, or offensive metrics at various field positions."),
+                 img(src = "harvin.jpg", height = "200px"),
+                 p("Vikings Legend Percy Harvin")
         ),
+        
         tabPanel("Data Download", 
                  h3("Data Download"),
                  downloadLink('downloadData', 'Download'),
@@ -133,7 +143,7 @@ ui<-fluidPage(
                               DT::dataTableOutput("metric_by_position_table")
                             )
                             
-                   ),
+                   )
                  )
         )
         
@@ -314,7 +324,7 @@ server <- function(input, output, session) {
       )+
       facet_wrap(~play_type, ncol = 1) +
       labs(
-        title = paste0("Offensive ", input$pos_metric, " by Field Position and Play Type"),,
+        title = paste0("Offensive ", input$pos_metric, " by Field Position and Play Type"),
         x = "Yards from Opponent End Zone",
         y = "",
         fill = paste0("Average ", input$pos_metric)
@@ -325,4 +335,4 @@ server <- function(input, output, session) {
   
 }
 
-shinyApp(ui, server)
+shinyApp(ui, server, options = list(launch.browser = TRUE))
