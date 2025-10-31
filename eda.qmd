@@ -14,9 +14,15 @@ vikes_data <-read_csv("final_vikings_data.csv")
 ```{r, include=FALSE}
 
 ## Getting to know the data
-dim(vikes_data)
 colnames(vikes_data)
 
+```
+
+```{r}
+## Getting to know the data
+dim(vikes_data)
+vikes_data<-vikes_data|>
+  filter(!is.na(posteam) & posteam=="MIN") # I'm going to get only the plays where the vikes are on offense
 ```
 
 ## Contingency Tables and Numeric Summaries
@@ -59,7 +65,7 @@ vikes_table_2 <- vikes_data |>
 vikes_table_2
 ```
 
-Cool! Vikings were averaging a high 4.1 yards per play in 2013. Surprisingly, the Vikings were 5-10-1 in spite of this.
+Cool! Vikings were averaging a high 4.3 yards per play in 2009. The Vikings were 12-4.
 
 Let's add the Vikings wins to this table to look at how yards per play relates to games won.
 
@@ -89,7 +95,7 @@ ggplot(vikes_table_2, aes(x=avg_yards, y = wins))+
    expand_limits(x = min(vikes_table_2$avg_yards) - 0.1)
 ```
 
-There is no obvious relationship between these two variables.
+There seems to be a loose positive trend between average yards per play and record.
 
 Let's next look at yards/run plays and yards/pass plays by year.
 
@@ -137,7 +143,7 @@ ggplot(vikes_table_3_long, aes(x = factor(year), y = average_yards, fill = play_
 
 -   Vikings fans will also remember 2009 as the year Brett Favre threw for 4200 yards and took the Vikings to the NFC championship game, only to lose to the Saints after an infamous "too many men on the field" penalty, and "bountygate"\--a system that incentivized Saints defensive players to try to knock opposing players out of the game. This was the year with the highest pass yards/attempt.
 
--   Let us also not forget that Favre and Peterson have both endured their fair share of scandals, and I don't want to reminisce on their glory days without noting this.
+-   Let us also not forget that Favre and Peterson have both endured their fair share of scandals, and I don't want to reminisce on their glory days without noting their complicated legacies.
 
 Lets look at some other things:
 
@@ -215,7 +221,7 @@ ggplot(vikes_table_4_long_wp, aes(x = factor(year), y = average_wpa, fill = play
 
 -   This is also a fascinating breakdown. Note that in 2009, running was not advantageous at all, although Adrian Peterson did run for 1300+ yards that year.
 
-Let's try to visualize some other things. I want to try do a heatmap relating EPA and field position.
+Let's try to visualize some other things. I want to try do a heatmap relating EPA and field position.\
 
 ```{r}
 epa_by_field<-vikes_data|>
