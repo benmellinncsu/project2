@@ -3,4 +3,4 @@ This app was created by Ben Mellin for a statistics project. This project explor
 ## Source 
 This data is from an [nflscrapr project](https://www.kaggle.com/datasets/maxhorowitz/nflplaybyplay2009to2016/data)
 ## Data Filtering
-The data 
+The original data set was filtered to include only vikings data by using this file: [get_final_dset.R] (get_final_dset.R)
