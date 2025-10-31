@@ -10,6 +10,6 @@ Static data exploration can be found [here](https://github.com/benmellinncsu/pro
 The original data set was filtered to include only vikings data by using this file: [get_final_dset.R](https://github.com/benmellinncsu/project2/blob/main/get_final_dset.R). The modified dataset can be found [here](https://github.com/benmellinncsu/project2/blob/main/final_vikings_data.csv.zip)
 
 ## App.r deployment
-The final deployment of the Shiny App can be found [here]().
+The final deployment of the Shiny App can be found [here](https://bmellin-ncsu.shinyapps.io/project_2/).
 
 ## SKOL!!!
